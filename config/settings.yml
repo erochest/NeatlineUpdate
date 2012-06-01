@@ -2,8 +2,14 @@ Default: &defaults
   host: "*4" # any IPv4 host
   port: 3000
   approot: "http://localhost:3000"
-  copyright: Insert copyright statement here
+  copyright: 
   #analytics: UA-YOURCODE
+  basedir: "/Users/err8n/p/neatline/omeka/plugins"
+  repos:
+    - Neatline
+    - NeatlineFeatures
+    - NeatlineMaps
+    - NeatlineTime
 
 Development:
   <<: *defaults
@@ -17,3 +23,4 @@ Staging:
 Production:
   #approot: "http://www.example.com"
   <<: *defaults
+  basedir: "/tmp"

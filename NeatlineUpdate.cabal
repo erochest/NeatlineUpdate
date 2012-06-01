@@ -29,6 +29,7 @@ library
                      Settings.StaticFiles
                      Settings.Development
                      Handler.Home
+                     Handler.Update
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
@@ -75,6 +76,8 @@ library
                  , http-conduit                  >= 1.4        && < 1.5
                  , directory                     >= 1.1        && < 1.2
                  , warp                          >= 1.2        && < 1.3
+                 , aeson                         >= 0.6        && < 0.7
+                 , yesod-json                    >= 1.0        && < 2.0
 
 executable         NeatlineUpdate
     if flag(library-only)
