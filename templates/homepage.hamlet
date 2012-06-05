@@ -1,7 +1,4 @@
 
 <h1>Neatline Update
 
-<ul>
-$forall repo <- repos
-  <li>#{repo}
 

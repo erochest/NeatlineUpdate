@@ -1,0 +1,16 @@
+<div .repoinfo>
+  <div .reponame>#{name}
+
+  <dl .dl-horizontal>
+    <dt>Directory
+    <dd>#{baseDir}/#{name}
+    <dt>Branch
+    $maybe br <- branch
+      <dd>#{br}
+    $nothing
+      <dd>None
+    <dt>Commits Behind
+    <dd>#{behind}
+  <div .updatebtn>
+    <a .btn.btn-primary href=@{UpdateR name}>Update
+  <div .clearfix>
