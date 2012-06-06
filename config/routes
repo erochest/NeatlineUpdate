@@ -4,4 +4,4 @@
 /robots.txt RobotsR GET
 
 / HomeR GET
-/update/#Text UpdateR POST
+/update/#Text UpdateR GET

@@ -1,0 +1,15 @@
+<h1>#{repoName} Updated
+
+<div .repoinfo>
+    <dl .dl-horizontal>
+        <dt>Exit Status
+        <dd>#{ec}
+
+        <dt>Output
+        <dd>
+            <pre>#{out}
+
+    <div .updatebtn>
+        <a .btn.btn-primary href=@{HomeR}>
+            <i>Back
+    <div .clearfix>

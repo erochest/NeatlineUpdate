@@ -1,5 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections, OverloadedStrings #-}
+
 module Handler.Home where
 
 import           Data.Maybe (listToMaybe)
