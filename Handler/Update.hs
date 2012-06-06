@@ -47,7 +47,9 @@ updateWidget :: FilePath -> FilePath -> Widget
 updateWidget baseDir repoName = do
     setTitle . toHtml $ T.concat ["Update ", either id id $ toText repoName]
     (_, mout, _, pr) <- liftIO . createProcess $
-          (proc "git" ["pull"]) { cwd = Just $ encodeString repoDir }
+          (proc "git" ["pull"]) { cwd     = Just $ encodeString repoDir
+                                , std_out = CreatePipe
+                                }
     ec  <- liftIO $ waitForProcess pr
     out <- liftIO $ maybe (return "<no output>") hGetContents mout
     $(widgetFile "update")

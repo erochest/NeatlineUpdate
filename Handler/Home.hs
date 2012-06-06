@@ -11,9 +11,10 @@ import           Import hiding (FilePath)
 import           Yesod.Default.Config
 -- import           Yesod.Logger
 import           Filesystem.Path
-import           Filesystem.Path.CurrentOS (fromText)
+import           Filesystem.Path.CurrentOS (fromText, encodeString)
 import           Filesystem (getWorkingDirectory, setWorkingDirectory)
-import           System.Process (readProcess)
+import           System.IO
+import           System.Process
 import           Text.Printf
 import           Prelude hiding (FilePath)
 
@@ -33,12 +34,16 @@ getHomeR = do
         $(widgetFile "homepage")
         forM_ extraRepos (repoWidget extraBaseDir)
 
-runInDir :: FilePath -> IO a -> IO a
-runInDir dir action = do
-    cwd <- getWorkingDirectory
-    bracket_ (setWorkingDirectory dir)
-             (setWorkingDirectory cwd)
-             action
+runInDir :: String -> String -> [String] -> IO (Maybe String)
+runInDir dir exec args = do
+    (_, mout, _, p) <- createProcess $ (proc exec args) { cwd     = Just dir
+                                                        , std_out = CreatePipe
+                                                        }
+    ec  <- waitForProcess p
+
+    case mout of
+        Just h  -> Just <$> hGetContents h
+        Nothing -> return Nothing
 
 -- This is a view widget for displaying information about a repository.
 repoWidget :: T.Text -> T.Text -> Widget
@@ -48,21 +53,14 @@ repoWidget baseDir name = do
     -- liftIO $ logText logger baseDir
     -- liftIO $ logText logger name
     -- liftIO $ runInDir baseDir (logString logger =<< readProcess "git" ["branch"] "")
-    branch <- liftIO . runInDir repoDir $   listToMaybe
-                                        .   map (drop 2)
-                                        .   filter (elem '*')
-                                        .   lines
-                                        <$> readProcess "git" ["branch"] ""
+    branches <- liftIO $ runInDir repoDir "git" ["branch"]
     -- liftIO . logString logger $ show branch
-    let branch' = maybe "master" id branch
-    _ <- liftIO . runInDir repoDir $ readProcess "git" ["fetch", "--quiet"] ""
-    behind <- liftIO . runInDir repoDir
-            $    length
-            .    filter (not . startsWith ':')
-            .    lines
-            <$> readProcess "git" [ "whatchanged", "--oneline"
-                                  , printf "%s..origin/%s" branch' branch'
-                                  ] ""
+    let branch  = getCurrentBranch branches
+        branch' = maybe "master" id branch
+    _ <- liftIO $ runInDir repoDir "git" ["fetch", "--quiet"]
+    behind <- liftIO $ maybe (-1) getWhatChanged <$> runInDir repoDir "git" [ "whatchanged", "--oneline"
+                                                               , printf "%s..origin/%s" branch' branch'
+                                                               ]
     $(widgetFile "repoView")
     where startsWith :: Char -> String -> Bool
           startsWith c (s:_) | c == s    = True
@@ -71,5 +69,17 @@ repoWidget baseDir name = do
 
           baseDir' = fromText baseDir
           name'    = fromText name
-          repoDir  = baseDir' </> name'
+          repoDir' = baseDir' </> name'
+          repoDir  = encodeString repoDir'
+
+          getCurrentBranch :: Maybe String -> Maybe String
+          getCurrentBranch output =   join
+                                  $   ( listToMaybe
+                                      . map (drop 2)
+                                      . filter (elem '*')
+                                      . lines
+                                      )
+                                  <$> output
+          getWhatChanged :: String -> Int
+          getWhatChanged = length . filter (not . startsWith ':') . lines
 
